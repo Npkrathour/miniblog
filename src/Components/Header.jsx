@@ -1,12 +1,24 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { HiMenuAlt4 } from "react-icons/hi";
 import { useState, useContext, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase";
 import UserContext from "../ContextApi/UserContext";
 
 const Header = () => {
-  const { user, logout } = useContext(UserContext);
+  const { user, setUser, logout } = useContext(UserContext);
   const [toggle, setToggle] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [setUser]);
 
   const handleToggle = () => {
     setToggle((prev) => !prev);
@@ -18,7 +30,6 @@ const Header = () => {
     navigate("/auth");
   };
 
-  // Prevent background scrolling when menu is open
   useEffect(() => {
     document.body.style.overflow = toggle ? "hidden" : "auto";
   }, [toggle]);
